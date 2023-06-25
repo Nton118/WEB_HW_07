@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
             teachers = session.query(Teacher).all()
             for teacher in teachers:
-                print(f"Викладач з ID: {teacher.id}, Ім'я: {teacher.fullname}")
+                print(f"Викладач з ID: {teacher.id}, Ім'я: {teacher.name}")
 
         elif args.action == 'update':
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     elif args.model == 'Student':
         if args.action == 'create':
 
-            student = Student(fullname=args.name, group_id=choice(count_records(Group)) 
+            student = Student(name=args.name, group_id=choice(count_records(Group)) 
                               if not args.group_id else args.group_id)
             session.add(student)
             session.commit()
@@ -147,13 +147,13 @@ if __name__ == "__main__":
 
             students = session.query(Student).all()
             for student in students:
-                print(f"Студент з ID: {student.id}, Ім'я: {student.fullname}")
+                print(f"Студент з ID: {student.id}, Ім'я: {student.name}")
 
         elif args.action == 'update':
 
             student = session.query(Student).get(args.id)
             if student:
-                student.fullname = args.name
+                student.name = args.name
                 session.commit()
                 print(f'Студента з ID {args.id} успішно змінений.')
             else:

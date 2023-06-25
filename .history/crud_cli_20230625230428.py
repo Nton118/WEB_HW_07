@@ -1,7 +1,8 @@
 import argparse
 from datetime import datetime, date, timedelta
-from random import choice
-
+from random import randint, choice
+from typing import List
+from sqlalchemy import select
 
 from database.models import Teacher, Student, Discipline, Grade, Group
 from database.db import session
@@ -14,12 +15,12 @@ parser.add_argument("--action", "-a", choices=['create', 'list', 'update', 'remo
 parser.add_argument("--model", "-m", choices=['Teacher', 'Student', 'Discipline', 'Grade',
                                               'Group'],
                     help="модель, до якої застосовується дія", required=True)
-parser.add_argument("--id", type=int, help="ідентифікатор запису")
-parser.add_argument('--name', help="Ім'я запису")
-parser.add_argument('--date_of', help="дата для оцінки")
-parser.add_argument('--student_id', help="ID студента для оцінки")
-parser.add_argument('--discipline_id', help="ID предмета для оцінки")
-parser.add_argument('--grade', help="оцінка 1-12 баллів")
+parser.add_argument("--id", type=int, help="ідентифікатор запису", required=True)
+parser.add_argument('--name', help="Ім'я запису", required=True)
+parser.add_argument('--date_of', help="дата для оцінки", required=True)
+parser.add_argument('--student_id', help="ID студента для оцінки", required=True)
+parser.add_argument('--discipline_id', help="ID предмета для оцінки", required=True)
+parser.add_argument('--grade', help="оцінка 1-12 баллів", required=True)
 parser.add_argument('--group_id', help="ID групи для студента")
 parser.add_argument('--teacher_id', help="ID викладача для предмета")
 
@@ -42,7 +43,7 @@ if __name__ == "__main__":
 
             teachers = session.query(Teacher).all()
             for teacher in teachers:
-                print(f"Викладач з ID: {teacher.id}, Ім'я: {teacher.fullname}")
+                print(f"Викладач з ID: {teacher.id}, Ім'я: {teacher.name}")
 
         elif args.action == 'update':
 
@@ -137,7 +138,7 @@ if __name__ == "__main__":
     elif args.model == 'Student':
         if args.action == 'create':
 
-            student = Student(fullname=args.name, group_id=choice(count_records(Group)) 
+            student = Student(name=args.name, group_id=choice(count_records(Group)) 
                               if not args.group_id else args.group_id)
             session.add(student)
             session.commit()
@@ -147,13 +148,13 @@ if __name__ == "__main__":
 
             students = session.query(Student).all()
             for student in students:
-                print(f"Студент з ID: {student.id}, Ім'я: {student.fullname}")
+                print(f"Студент з ID: {student.id}, Ім'я: {student.name}")
 
         elif args.action == 'update':
 
             student = session.query(Student).get(args.id)
             if student:
-                student.fullname = args.name
+                student.name = args.name
                 session.commit()
                 print(f'Студента з ID {args.id} успішно змінений.')
             else:
