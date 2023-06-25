@@ -1,6 +1,5 @@
-import sqlite3
 from datetime import datetime, date, timedelta
-from random import randint
+from random import randint, choice
 from typing import List
 from sqlalchemy import select
 from faker import Faker
@@ -8,63 +7,51 @@ from faker import Faker
 from database.models import Teacher, Student, Discipline, Grade, Group
 from database.db import session
 
-fake = Faker("en-US")
+fake = Faker("uk-UA")
 
 subjects = [
-    "Mathematics",
-    "Physics",
-    "Chemistry",
-    "Literature",
-    "Philosophy",
-    "Programming",
-    "Artificial Intelligence",
-    "Finance"]
+    "Математика",
+    "Фізика",
+    "Хімія",
+    "Література",
+    "Філософія",
+    "Програмування",
+    "Штучний інтелект",
+    "Фінанси"]
 
-groups = ["alpha", "beta", "gamma"]
+groups = ["MM-01", "ПП-02", "АП-00"]
 
 NUMBERS_TEACHERS = 5
 NUMBERS_STUDENTS = 50
 
 
-
-def seed_teacher():
-    teachers = [fake.name() for _ in range(NUMBERS_TEACHERS)]
-    sql = "INSERT INTO teachers(fullname) VALUES (?);"
-    cursor.executemany(
-        sql,
-        zip(
-            teachers,
-        ),
-    )
+def seed_teachers():
+    for _ in range(NUMBERS_TEACHERS):
+        teacher = Teacher(fullname=fake.name())
+        session.add(teacher)
 
 
 def seed_groups():
-    sql = "INSERT INTO groups(name) VALUES (?);"
-    cursor.executemany(
-        sql,
-        zip(
-            groups,
-        ),
-    )
-
-
-def seed_students():
-    students = [fake.name() for _ in range(NUMBERS_STUDENTS)]
-    list_group_id = [randint(1, len(groups)) for _ in range(NUMBERS_STUDENTS)]
-    sql = "INSERT INTO students(fullname, group_id) VALUES (?, ?);"
-    cursor.executemany(sql, zip(students, list_group_id))
+    for group in groups:
+        session.add(Group(name=group))
 
 
 def seed_subjects():
-    list_teacher_id = [randint(1, NUMBERS_TEACHERS) for _ in range(len(subjects))]
-    sql = "INSERT INTO subjects(name, teacher_id) VALUES (?, ?);"
-    cursor.executemany(sql, zip(subjects, list_teacher_id))
+    teacher_ids = session.scalars(select(Teacher.id)).all()
+    for discipline in subjects:
+        session.add(Discipline(name=discipline, teacher_id=choice(teacher_ids)))
+
+
+def seed_students():
+    group_ids = session.scalars(select(Group.id)).all()
+    for _ in range(NUMBERS_STUDENTS):
+        student = Student(fullname=fake.name(), group_id=choice(group_ids))
+        session.add(student)
 
 
 def seed_grades():
     start_date = datetime.strptime("2022-09-01", "%Y-%m-%d")
     finish_date = datetime.strptime("2023-05-31", "%Y-%m-%d")
-    sql = "INSERT INTO grades(student_id, subject_id, grade, date_of) VALUES (?, ?, ?, ?);"
 
     def get_list_date(start_date, finish_date) -> List[date]:
         result = []
@@ -76,26 +63,27 @@ def seed_grades():
         return result
 
     list_date = get_list_date(start_date, finish_date)
+    discipline_ids = session.scalars(select(Discipline.id)).all()
+    student_ids = session.scalars(select(Student.id)).all()
 
     grades = []
     for day in list_date:
-        random_subject = randint(1, len(subjects))
-        random_students = [randint(1, NUMBERS_STUDENTS) for _ in range(5)]
-        for student in random_students:
-            grades.append((student, random_subject, randint(1, 12), day.date()))
+        random_subject_id = choice(discipline_ids)
+        random_student_ids = [choice(student_ids) for _ in range(5)]
+        for student_id in random_student_ids:
+            grade = Grade(grade=randint(1, 12), date_of=day, student_id=student_id,
+                          discipline_id=random_subject_id)
+            session.add(grade)
 
-    cursor.executemany(sql, grades)
 
-
-def init_db():
-    seed_teacher()
+def fill_db():
+    seed_teachers()
+    seed_subjects()
     seed_groups()
     seed_students()
-    seed_subjects()
     seed_grades()
-    connect.commit()
-    connect.close()
+    session.commit()
 
 
 if __name__ == "__main__":
-    init_db()
+    fill_db()
