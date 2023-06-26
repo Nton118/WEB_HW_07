@@ -34,7 +34,7 @@ if __name__ == "__main__":
     if args.model == 'Teacher':
         if args.action == 'create':
 
-            teacher = Teacher(name=args.name)
+            teacher = Teacher(fullname=args.name)
             session.add(teacher)
             session.commit()
             print('Викладача створено успішно.')
