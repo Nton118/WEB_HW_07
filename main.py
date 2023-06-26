@@ -84,6 +84,10 @@ def main():
                 print(f"Введіть № групи 1-{q_gr}")
                 n_gr = input_number(1, q_gr)
                 pprint.pprint(execute_query(answer, n_subj, n_gr))
+            elif answer == 8:
+                print(f"Введіть № викладача 1-{q_teach}")
+                n_teach = input_number(1, q_teach)
+                pprint.pprint(execute_query(answer, n_teach))    
             elif answer == 9:
                 print(f"Введіть № студента 1-{q_stud}")
                 n_st = input_number(1, q_stud)
