@@ -13,7 +13,8 @@ parser.add_argument("--action", "-a", choices=['create', 'list', 'update', 'remo
                     required=True)
 parser.add_argument("--model", "-m", choices=['Teacher', 'Student', 'Discipline', 'Grade',
                                               'Group'],
-                    help="модель, до якої застосовується дія", required=True)
+                    help="модель, до якої застосовується дія (Teacher, Student, Discipline, Grade, Group)",
+                    required=True)
 parser.add_argument("--id", type=int, help="ідентифікатор запису")
 parser.add_argument('--name', help="Ім'я запису")
 parser.add_argument('--date_of', help="дата для оцінки")
